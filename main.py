@@ -25,7 +25,7 @@ async def summ(a: int = 0, b: int = 0):
     return {"sum": a+b}
 
 
-@app.get("/student")
+@app.post("/student")
 async def student(model: Student):
     return model.model_dump()
 
