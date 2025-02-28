@@ -84,6 +84,90 @@ class UniversityDataHandler:
         except Exception as e:
             print(f"Ошибка при чтении файла: {e}")
 
+    def update_faculty(self, faculty_id, new_name):
+        faculty = self.session.query(Faculty).get(faculty_id)
+        if faculty:
+            faculty.name = new_name
+            self.session.commit()
+        else:
+            print("Факультет не найден.")
+
+    def update_course(self, course_id, new_name):
+        course = self.session.query(Course).get(course_id)
+        if course:
+            course.name = new_name
+            self.session.commit()
+        else:
+            print("Курс не найден.")
+
+    def update_person(self, person_id, surname, name, type):
+        person = self.session.query(Person).get(person_id)
+        if person:
+            person.surname = surname
+            person.name = name
+            person.type = type
+            self.session.commit()
+        else:
+            print("Персона не найдена.")
+
+    def update_student(self, student_id, faculty_id, course_id):
+        student = self.session.query(Student).get(student_id)
+        if student:
+            student.faculty_id = faculty_id
+            student.course_id = course_id
+            self.session.commit()
+        else:
+            print("Студент не найден.")
+
+    def update_grade(self, grade_id, subject, score):
+        grade = self.session.query(Grade).get(grade_id)
+        if grade:
+            grade.subject = subject
+            grade.score = score
+            self.session.commit()
+        else:
+            print("Оценка не найдена.")
+
+    def delete_faculty(self, faculty_id):
+        faculty = self.session.query(Faculty).get(faculty_id)
+        if faculty:
+            self.session.delete(faculty)
+            self.session.commit()
+        else:
+            print("Факультет не найден.")
+
+    def delete_course(self, course_id):
+        course = self.session.query(Course).get(course_id)
+        if course:
+            self.session.delete(course)
+            self.session.commit()
+        else:
+            print("Курс не найден.")
+
+    def delete_person(self, person_id):
+        person = self.session.query(Person).get(person_id)
+        if person:
+            self.session.delete(person)
+            self.session.commit()
+        else:
+            print("Персона не найдена.")
+
+    def delete_student(self, student_id):
+        student = self.session.query(Student).get(student_id)
+        if student:
+            self.session.delete(student)
+            self.session.commit()
+        else:
+            print("Студент не найден.")
+
+    def delete_grade(self, grade_id):
+        grade = self.session.query(Grade).get(grade_id)
+        if grade:
+            self.session.delete(grade)
+            self.session.commit()
+        else:
+            print("Оценка не найдена.")
+
 
 # Пример использования
 if __name__ == "__main__":
