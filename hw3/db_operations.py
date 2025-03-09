@@ -21,8 +21,15 @@ class UniversityDataHandler:
         self.session.add(course)
         self.session.commit()
 
-    def insert_person(self, surname, name, type='студент'):
-        person = Person(surname=surname, name=name, type=type)
+
+    def insert_person(self, surname, name, email, password_hash, type='user'):
+        person = Person(
+            surname=surname,
+            name=name,
+            email=email,
+            password_hash=password_hash,
+            type=type
+        )
         self.session.add(person)
         self.session.commit()
         return person.id

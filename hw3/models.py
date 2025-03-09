@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, declarative_base
 
 from sqlalchemy import create_engine
@@ -26,10 +26,14 @@ class Course(Base):
 
 class Person(Base):
     __tablename__ = 'persons'
-    id = Column(Integer, primary_key=True, autoincrement=True)  # Идентификатор персоны
-    surname = Column(String(50), nullable=False)                 # Фамилия
-    name = Column(String(50), nullable=False)                    # Имя
-    type = Column(String(10), nullable=False)                    # Тип (студент или сотрудник)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(100), unique=True, nullable=False)
+    password_hash = Column(String(100), nullable=False)
+    surname = Column(String(50), nullable=False)
+    name = Column(String(50), nullable=False)
+    type = Column(String(10), nullable=False)
+    is_active = Column(Boolean, default=True)
+    role = Column(String(20), default='user')
 
 
 class Student(Base):
