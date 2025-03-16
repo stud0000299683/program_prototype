@@ -1,13 +1,27 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from pydantic import BaseModel
-
+import redis
 
 from db_operations import UniversityDataHandler
 from models import Person
 from dependencies import get_current_user, check_read_only_access
 
-
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
 router = APIRouter(prefix="/university", tags=["University"])
+
+
+def cache_response(key: str, data: dict):
+    redis_client.set(key, data)
+    redis_client.expire(key, 300)  # Устанавливаем время жизни кеша (например, 5 минут)
+
+
+def get_cached_response(key: str):
+    cached_data = redis_client.get(key)
+    if cached_data:
+        return cached_data.decode("utf-8")
+    return None
+
+
 
 # Инициализация обработчика данных
 handler = UniversityDataHandler()
@@ -53,9 +67,25 @@ def create_faculty(faculty: FacultyModel, user: Person = Depends(get_current_use
     handler.insert_faculty(faculty.name)
     return {"message": "Факультет создан"}
 
+# @router.get("/faculties/")
+# def read_faculties(user: Person = Depends(get_current_user)):
+#     return handler.select_all_faculties()
+
+
 @router.get("/faculties/")
-def read_faculties(user: Person = Depends(get_current_user)):
-    return handler.select_all_faculties()
+def read_faculties():
+    cache_key = "faculties"
+    # Проверяем, есть ли данные в кеше
+    cached_data = get_cached_response(cache_key)
+    if cached_data:
+        return {"data": eval(cached_data)}  # Преобразуем строку обратно в список
+    # Если данных нет в кеше, получаем их из базы данных
+    faculties = handler.select_all_faculties()
+    # Преобразуем данные в строку (или JSON) и сохраняем в кеш
+    faculties_data = [faculty.name for faculty in faculties]  # Предполагается, что у Faculty есть поле `name`
+    cache_response(cache_key, str(faculties_data))
+    return {"data": faculties_data}
+
 
 # Для read-only пользователей
 @router.delete("/faculties/{faculty_id}")
@@ -166,3 +196,21 @@ def delete_student(student_id: int, user: Person = Depends(get_current_user)):
 def delete_grade(grade_id: int, user: Person = Depends(get_current_user)):
     handler.delete_grade(grade_id)
     return {"message": "Оценка удалена"}
+
+
+@router.post("/load_csv/")
+def load_csv(file_path: str, background_tasks: BackgroundTasks):
+    try:
+        background_tasks.add_task(handler.load_data_from_csv, file_path)
+        return {"message": f"Фоновая задача по загрузке данных из {file_path} запущена."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/delete_records/")
+def delete_records(record_ids: list[int], background_tasks: BackgroundTasks):
+    def delete_task(ids):
+        for record_id in ids:
+            handler.delete_person(record_id)
+    background_tasks.add_task(delete_task, record_ids)
+    return {"message": "Фоновая задача по удалению записей запущена."}
