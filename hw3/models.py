@@ -27,8 +27,8 @@ class Course(Base):
 class Person(Base):
     __tablename__ = 'persons'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String(100), unique=True, nullable=False)
-    password_hash = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=True)
+    password_hash = Column(String(100), nullable=True)
     surname = Column(String(50), nullable=False)
     name = Column(String(50), nullable=False)
     type = Column(String(10), nullable=False)

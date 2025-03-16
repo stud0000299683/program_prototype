@@ -78,7 +78,7 @@ class UniversityDataHandler:
                 course_id = course.id
 
                 # Создание персоны (студента)
-                person_id = self.insert_person(row['Фамилия'], row['Имя'])
+                person_id = self.insert_person(row['Фамилия'], row['Имя'],None,None)
 
                 # Создание студента
                 self.insert_student(person_id, faculty_id, course_id)
